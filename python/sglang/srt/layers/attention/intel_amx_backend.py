@@ -51,8 +51,16 @@ class IntelAMXAttnBackend(AttentionBackend):
         self.decode_attention_fwd = torch.ops.sgl_kernel.decode_attention_cpu
         self.extend_attention_fwd = torch.ops.sgl_kernel.extend_attention_cpu
 
-    def init_forward_metadata(self, forward_batch: ForwardBatch):
-        """Init the metadata for a forward pass."""
+    def init_forward_metadata_out_graph(
+        self, forward_batch: ForwardBatch, in_capture: bool = False
+    ):
+        """Init the metadata for a forward pass.
+
+        No CUDA-graph path here (CPU-graph capture uses the separate
+        ``init_forward_metadata_capture_cpu_graph`` contract), so this is
+        reached only eagerly via the base ``init_forward_metadata`` wrapper
+        (``in_capture`` is always ``False``).
+        """
 
         bs = forward_batch.batch_size
         attn_logits = torch.zeros(
