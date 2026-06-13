@@ -27,8 +27,14 @@ class TorchFlexAttnBackend(AttentionBackend):
         torch._dynamo.config.cache_size_limit = 1024
         torch._dynamo.config.accumulated_cache_size_limit = 1024
 
-    def init_forward_metadata(self, forward_batch: ForwardBatch):
-        """Init the metadata for a forward pass."""
+    def init_forward_metadata_out_graph(
+        self, forward_batch: ForwardBatch, in_capture: bool = False
+    ):
+        """Init the metadata for a forward pass.
+
+        No CUDA-graph path here, so this is reached only eagerly via the base
+        ``init_forward_metadata`` wrapper (``in_capture`` is always ``False``).
+        """
         # TODO: find a more elegant way to save memory
         # Currently maintain the same memory as torch_native_backend
         torch.cuda.empty_cache()
